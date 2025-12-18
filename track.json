@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Emthera/spec/main/track-spec-v1.6.json",
+  "title": "Clinical Track Logic",
+  "description": "Metadata defining a data model for the actuall collectables in turn collecting the actual measurements",
+  "x-author": "Emthera / TheLazzziest",
+  "x-license": "CC-BY-NC-SA-4.0",
+  "type": "object",
+  "required": ["meta", "lineage", ""],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["track_id", "icd", "code"],
+      "properties": {
+        "track_id": { "type": "string", "format": "uuid" },
+        "version": { "type": "string", "description": "The current version of the entire track manifest." },
+        "icd": { 
+          "type": "string", 
+          "format": "uri", 
+          "description": "URI to the ICD version/system used (e.g., http://id.who.int/icd/release/11/2024-01/mms)." 
+        },
+        "code": { 
+          "type": "string", 
+          "description": "The specific alphanumeric code from the referenced ICD system (e.g., 7A00)." 
+        },
+        "display_name": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "closed", "branched"] }
+      }
+    },
+    "lineage": {
+      "type": "object",
+      "properties": {
+        "parents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ref", "version"],
+            "properties": {
+              "ref": { "type": "string", "format": "uri", "description": "Pointer to parent track." },
+              "version": { "type": "string", "description": "The specific version label from the parent's rule_history from which this track branched." }
+            }
+          }
+        },
+        "branch_logic": { "type": "string", "description": "Reason for branching (e.g., suspected ATF insufficiency branching from Sleep Disorder)." }
+      }
+    },
+    "symptoms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "providers"],
+        "properties": {
+          "id": { "type": "string", "description": "SNOMED-CT code or a custom UUID for vague symptoms." },
+          "label": { "type": "string", "description": "Human-readable name (e.g., 'Heart Palpitations')." },
+          "category": { "type": "string", "description": "e.g., Cardiac, Sleep, Gastric." },
+          "measurement_logic": {
+            "type": "object",
+            "properties": {
+              "scale": { "type": "string", "default": "1-10" },
+              "frequency": { "type": "string", "description": "e.g., 'Symptomatic', 'Daily'." },
+              "qualifiers": { "type": "array", "items": { "type": "string" }, "description": "e.g., 'Sharp', 'Dull', 'Constant'." }
+            }
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["provider_ref", "collectible_id"],
+              "properties": {
+                "provider_ref": { "type": "string", "format": "uri", "description": "Link to the tool in the Profile Root (e.g., Apple Watch, CareClinic)." },
+                "collectible_id": { "type": "string", "description": "The specific stream ID (e.g., 'hr_variability', 'ecg_waveform')." },
+                "observation_window": { "type": "string", "description": "Time buffer for analysis (e.g., '-2m/+5m')." }
+              }
+            }
+          }
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "description": "Unified clinical orders for tests, examinations and other kinds of procedures",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "frequency", "expected_type"],
+        "properties": {
+          "id": { "type": "string", "description": "LOINC, SNOMED, or internal clinical ID." },
+          "label": { "type": "string", "description": "Human-readable name (e.g., 'Homocysteine' or 'X-ray')." },
+          "category": { "type": "string", "description": "e.g., 'Radiology', 'Blood Work', 'Biopsy'." },
+          "frequency": {
+            "type": "object",
+            "required": ["type"],
+            "oneOf": [
+              {
+                "properties": {
+                  "type": { "const": "event" },
+                  "trigger_id": { "type": "string", "description": "Optional Symptom ID." },
+                  "urgency": { "enum": ["routine", "urgent", "stat"] }
+                },
+                "required": ["urgency"]
+              },
+              {
+                "properties": {
+                  "type": { "const": "cron" },
+                  "cron": { "type": "string" },
+                  "validity_period": { "type": "string", "description": "ISO 8601 duration." }
+                },
+                "required": ["cron"]
+              },
+              {
+                "properties": {
+                  "type": { "const": "on_demand" },
+                  "instructions": { "type": "string" }
+                }
+              }
+            ]
+          },
+          "constraints": {
+            "type": "array",
+            "description": "References to clinical guidelines or target standards.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "standard_ref": { 
+                  "type": "string", 
+                  "format": "uri", 
+                  "description": "URI to the specific guideline (e.g., NICE, Mayo Clinic, or WHO)." 
+                },
+                "interpretation_context": {
+                  "type": "string", 
+                  "description": "e.g., 'Normal Range', 'Optimal for Athletes', 'Cardiac Risk Threshold'." 
+                }
+              }
+            }
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["provider_ref"],
+              "properties": {
+                "provider_ref": { "type": "string", "format": "uri" },
+                "specialist_role": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+  }
+}
