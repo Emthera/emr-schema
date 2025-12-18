@@ -1,8 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://open-emr-standard.org/schemas/episode-oriented-record-v2.json",
-  "title": "Open Standard EMR (Solon Architecture) - Extended",
-  "description": "Episode-oriented schema with support for external tracking, medication regimens, and symptomatic experiments.",
+  "$id": "https://raw.githubusercontent.com/Emthera/spec/main/profile.json",
+  "title": "Open Medical Profile",
+  "description": "The master index for patient-sovereign health records.",
+  "x-author": "Emthera / TheLazzziest",
+  "x-license": "CC-BY-4.0",
   "type": "object",
   "required": ["profile"],
   "properties": {
