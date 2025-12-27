@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/schemas/global-physician.json",
+  "title": "Physician Profile",
+  "description": "An agnostic representation of a healthcare provider using URI-based identity.",
+  "type": "object",
+  "required": [
+    "physician"
+  ],
+  "properties": {
+    "physician": {
+      "type": "object",
+      "description": "The container block for physician data.",
+      "required": [
+        "id",
+        "identity",
+        "name",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "identity": {
+          "type": "string",
+          "format": "uri",
+          "description": "Resolvable URI (e.g., decentralized ID or LinkedIn profile)."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "inactive", "suspended"],
+          "default": "active"
+        },
+        "name": {
+          "type": "object",
+          "required": ["family", "given"],
+          "properties": {
+            "given": { "type": "string" },
+            "family": { "type": "string" },
+            "prefix": { "type": "string" },
+            "suffix": { "type": "string" }
+          }
+        },
+        "specialties": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "licenses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "jurisdiction": { "type": "string" },
+              "identifier": { "type": "string" },
+              "issuer_uri": { "type": "string", "format": "uri" }
+            },
+            "required": ["jurisdiction", "identifier"]
+          }
+        },
+        "contacts": {
+          "type": "array",
+          "description": "List of communication channels.",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["method", "value"],
+            "properties": {
+              "use": {
+                "type": "string",
+                "description": "Context (e.g., work, home, billing)."
+              },
+              "method": {
+                "type": "string",
+                "description": "Type of contact (e.g., phone, email, whatsapp, signal, address)."
+              },
+              "value": {
+                "description": "The contact detail. Can be a string or a structured address object.",
+                "type": "string",
+                "description": "For email, phone, url, or messaging handles."
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
